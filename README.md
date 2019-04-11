@@ -1,4 +1,7 @@
-# zram-config
+# f2fs-config
+Thinking of some ideas of implementing f2fs without need to do the resize>createf2fs>copy>mount>remove orig.
+If anyone has any ideas on live shrink of root maybe through a chroot please shout as all ears.
+Blah blah old stuff...
 Complete zram config utility for swap, directory &amp; log 
 Usefull for IoT / maker projects for reducing SD, Nand and Emmc block wear via log operations.
 Uses Zram to minimise precious memory footprint and extremely infrequent write outs and near ram speed working dirs with memory compression ratios depending on compression alg chosen.
