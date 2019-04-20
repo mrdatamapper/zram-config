@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 createZswap () {
 	createZdevice || return 1
@@ -39,7 +39,7 @@ createZdir () {
 			mkdir -p ${ZDIR}/zram${RAM_DEV} >>${ZLOG} 2>&1 || return 1
 			mount --verbose --types ext4 -o nosuid,noexec,nodev /dev/zram${RAM_DEV} ${ZDIR}/zram${RAM_DEV}/ >>${ZLOG} 2>&1 || return 1
 			mkdir -p ${ZDIR}/zram${RAM_DEV}/upper ${ZDIR}/zram${RAM_DEV}/workdir ${TARGET_DIR} >>${ZLOG} 2>&1 || return 1
-			mount --verbose --types overlay -o redirect_dir=on,lowerdir=${ZDIR}${BIND_DIR},upperdir=${ZDIR}/zram${RAM_DEV}/upper,workdir=${ZDIR}/zram${RAM_DEV}/workdir overlay${RAM_DEV} ${TARGET_DIR} >>${ZLOG} 2>&1 || return 1
+			mount --verbose --types overlay -o lowerdir=${ZDIR}${BIND_DIR},upperdir=${ZDIR}/zram${RAM_DEV}/upper,workdir=${ZDIR}/zram${RAM_DEV}/workdir overlay${RAM_DEV} ${TARGET_DIR} >>${ZLOG} 2>&1 || return 1
 			echo "${ZTYPE}		/zram${RAM_DEV}		${TARGET_DIR}		${BIND_DIR}" >> ${ZSHARE}/zram-device-list
 		else
 			echo "No mount dir in ztab" >>${ZLOG}
@@ -52,19 +52,8 @@ createZdir () {
 }
 	
 createZlog () {
-	invoke-rc.d rsyslog stop >>${ZLOG} 2>&1 || return 1
 	createZdir || return 1
-	invoke-rc.d rsyslog restart >>${ZLOG} 2>&1 || return 1
 	journalctl --flush >>${ZLOG} 2>&1 || return 1
-	if [ ! -z "$OLDLOG_DIR" ]
-	then
-		cp -arvf /etc/logrotate.conf ${ZSHARE}/logrotate.conf.bak >>${ZLOG} 2>&1 || return 1
-		sed -i "/^weekly.*/i olddir ${ZDIR}${OLDLOG_DIR}" /etc/logrotate.conf >>${ZLOG} 2>&1 || return 1
-		sed -i "/^weekly.*/i createolddir 755 root root" /etc/logrotate.conf >>${ZLOG} 2>&1 || return 1
-		sed -i "/^weekly.*/i renamecopy" /etc/logrotate.conf >>${ZLOG} 2>&1 || return 1
-	else
-		echo "createZlog no oldlog dir in ztab" >>${ZLOG}
-	fi
 }
 	
 createZdevice () {
@@ -101,28 +90,22 @@ mergeOverlay () {
 	echo "overlay --lowerdir=$ZDIR$BIND_DIR --upperdir=$ZDIR$ZRAM_DEV/upper" >>${ZLOG}
 	cd /usr/local/lib/zram-config/
 	./overlay merge -l "${ZDIR}${BIND_DIR}" -u "${ZDIR}${ZRAM_DEV}/upper" >>${ZLOG} 2>&1 || return 1
-	sh -x *.sh  >>${ZLOG} 2>&1 || return 1
+	sh *.sh  >>${ZLOG} 2>&1 || return 1
 	rm -v *.sh  >>${ZLOG} 2>&1 || return 1
 	
 }
 
 removeZlog () {
-	if [ ! -z "$OLDLOG_DIR" ]
-	then
-		cp -arvf ${ZSHARE}/logrotate.conf.bak /etc/logrotate.conf >>${ZLOG} 2>&1 || return 1
-	fi
 	echo "$ZRAM_DEV" >>${ZLOG}
 	#syncToDisk
 	DEV_NUM=$(echo ${ZRAM_DEV} | tr -dc '0-9')
 	if [ ! -z "$TARGET_DIR" ]
 	then
-		invoke-rc.d rsyslog stop >>${ZLOG} 2>&1 || return 1
 		if umount --verbose ${TARGET_DIR}/
 		then
 			echo "umount ${TARGET_DIR}/" >>${ZLOG}
 		else
 		sleep .1
-			invoke-rc.d rsyslog stop
 			umount --verbose -l ${TARGET_DIR}/ >>${ZLOG} 2>&1 || return 1
 		fi
 	else
@@ -144,9 +127,7 @@ removeZlog () {
 	else
 		return 1
 	fi
-	invoke-rc.d rsyslog stop >>${ZLOG} 2>&1 || return 1
 	echo "$DEV_NUM" > /sys/class/zram-control/hot_remove
-	invoke-rc.d rsyslog restart >>${ZLOG} 2>&1 || return 1
 	journalctl --flush >>${ZLOG} 2>&1 || return 1
 	echo "/dev$ZRAM_DEV removed" >>${ZLOG}
 }
