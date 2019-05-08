@@ -1,4 +1,15 @@
-#! /bin/bash
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides: zram
+# Required-Start: $local_fs
+# Required-Stop:
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: Increased Performance In Linux With zRam (Virtual Swap Compressed in RAM)
+# Copy this script (as root) from /usr/local/bin to /etc/init.d and then #update-rc.d zram defaults
+# After booting verify the module is loaded with: lsmod | grep zram
+### END INIT INFO
+
 
 createZswap () {
 	createZdevice || return 1
