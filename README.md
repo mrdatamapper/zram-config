@@ -9,7 +9,7 @@ This should allow quicker boots and larger directories as no complete directory 
 lower mount in the OverlayFS.
 https://github.com/kmxz/overlayfs-tools many thanks to kmxz for the overlay merge tool.
 
-Zram-config also allows a 'kiosk mode' where `sudo zram-config enable-ephemeral` on reboot will load the whole root into zram. There is no sync and zdir/zlog entries will be ignored as already included via the whole ro-root and zram upper. `sudo zram-config disable-ephemeral` and reboot to return to a normal system. https://blockdev.io/read-only-rpi/ and thanks to the original sources for another great script.
+
 
 
 _____
@@ -64,11 +64,6 @@ dir     lz4     50M             150M            /home/pi/MagicMirror    /magicmi
 # log   alg     mem_limit       disk_size       target_dir              bind_dir                oldlog_dir
 log     lz4     20M             60M             /var/log                /log.bind               /oldlog
 ```
-Zram-config also allows a 'kiosk mode' where `sudo zram-config enable-ephemeral` on reboot will load the whole root into a ro OverlayFS with zram writeable upper. 
-`sudo zram-config disable-ephemeral` and reboot to return to a normal system.
-You may need to reboot after the rpi-update and then mkinitramfs -o /boot/initrd as a newer kernel maybe updated.
-Check the 'Without NFS' section of https://blockdev.io/read-only-rpi/ as any problems you may have to remove the SD card and edit /boot/cmdline.txt removing the `init=/bin/ro-root.sh` entry.
-
 
 ### It is working?
 ```
@@ -142,30 +137,7 @@ KiB Swap:  1331192 total,  1331192 free,        0 used.   412052 avail Mem
     8 root      20   0       0      0      0 I   0.0  0.0   0:00.87 rcu_sched
     9 root      20   0       0      0      0 I   0.0  0.0   0:00.00 rcu_bh
 ```
-### enable-ephemeral
-```
-pi@raspberrypi:~/zram-config $ df
-Filesystem     1K-blocks    Used Available Use% Mounted on
-devtmpfs          465976       0    465976   0% /dev
-tmpfs              94832      48     94784   1% /mnt/run
-/dev/mmcblk0p2  14803620 1280148  12889224  10% /ro
-/dev/zram0        991512    5124    918804   1% /rw
-overlayfs-root    991512    5124    918804   1% /
-tmpfs             474152       0    474152   0% /dev/shm
-tmpfs             474152    6356    467796   2% /run
-tmpfs               5120       4      5116   1% /run/lock
-tmpfs             474152       0    474152   0% /sys/fs/cgroup
-/dev/mmcblk0p1     44220   30137     14083  69% /boot
-tmpfs              94828       0     94828   0% /run/user/1000
 
-```
-```
-pi@raspberrypi:~/zram-config $ zramctl
-NAME       ALGORITHM DISKSIZE  DATA  COMPR TOTAL STREAMS MOUNTPOINT
-/dev/zram0 lz4          1000M 19.2M 959.5K  1.4M       4 /rw
-/dev/zram1 lz4           750M    4K    76B    4K       4 [SWAP]
-
-```
 ### Performance
 LZO/4 offer the best performance and for swaps they are probably the defacto choice.
 You maybe have text based low impact directories such a /var/log /var/cache where highly
