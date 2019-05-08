@@ -3,8 +3,8 @@
 if [ "$(id -u)" -eq 0 ]
 then
 	service zram-config stop
-	systemctl disable zram-config
-	rm /etc/systemd/system/zram-config.service
+	update-rc.d -f zram-config remove
+	rm /etc/init.d/zram-config
 	rm /usr/local/bin/zram-config
 	rm /etc/ztab
 	rm /etc/logrotate.d/zram-config
