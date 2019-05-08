@@ -1,4 +1,4 @@
-# zram-config
+# zram-config  sysv-init version
 Complete zram config utility for swap, directory &amp; log 
 Usefull for IoT / maker projects for reducing SD, Nand and Emmc block wear via log operations.
 Uses Zram to minimise precious memory footprint and extremely infrequent write outs and near ram speed working dirs with memory compression ratios depending on compression alg chosen.
@@ -21,7 +21,7 @@ _____
 
 ### Install
     sudo apt-get install git
-    git clone https://github.com/StuartIanNaylor/zram-config
+    git clone --branch  sysv-init https://github.com/StuartIanNaylor/zram-config
     cd zram-config
     sudo sh install.sh
     
