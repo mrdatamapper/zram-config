@@ -2,6 +2,8 @@
 Description=zram-config
 After=local-fs.target
 Before=reboot.target halt.target
+#RequireMountsFor=/opt/zram/{insert_dir_path_here}
+
 [Service]
 Type=oneshot
 ExecStart=/usr/local/bin/zram-config start
